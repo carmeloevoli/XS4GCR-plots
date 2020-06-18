@@ -63,8 +63,12 @@ def str_to_Z(s):
         return 27
     elif (s == 'Ni'):
         return 28
+    elif (s == 'Cu'):
+        return 29
+    elif (s == 'Zn'):
+        return 30
     else:
-        print ('value not found')
+        print (s, 'is not found')
     
 def str_to_time(t):
     if (t == 'ms'):
@@ -80,7 +84,7 @@ def str_to_time(t):
     elif (t == 'y'):
         return 3600. * 24. * 365.25
     else:
-        print ('value not found')
+        print (t, 'is not found')
     return 0
     
 def read_ghosts(filename):
@@ -97,6 +101,17 @@ def read_ghosts(filename):
         T *= str_to_time(line[6])
         tdecay.append(T)
     return Zp, Ap, tdecay
+
+def read_child(filename):
+    Zc = []
+    Ac = []
+    f = open(filename, "r")
+    lines = f.readlines()
+    for line in lines[1:]:
+        line = line.split()
+        Zc.append(str_to_Z(line[2]))
+        Ac.append(int(line[3]))
+    return Zc, Ac
     
 year = 3600. * 24. * 365.25
 kyr = 1e3 * year
@@ -143,5 +158,47 @@ def plot_longbetadecays():
     
     plt.savefig('longbetadecays.pdf')
 
-plot_longbetadecays()
+def plot_betadecays(filename):
+    fig, ax = plib.set_plot_style()
+    Z, A, tau = read_ghosts(filename)
+    ax.set_yscale('log')
+    ax.plot(Z, tau, 'o')
+    ax.plot([0, 30], [kyr, kyr], ':')
+    plt.savefig('betadecays.pdf')
 
+def find_isotope(Z, A, Zp, Ap):
+    foundit = False
+    for Zp_, Ap_ in zip(Zp, Ap):
+        if Zp_ == Z and Ap_ == A:
+            foundit = True
+    return foundit
+    
+def check_decays(filename):
+    Zp, Ap, tau = read_ghosts(filename)
+    Zs, As = np.loadtxt('../../data/crchart_Z28.txt', skiprows=1, usecols=(0,1), unpack=True)
+    
+    Zc, Ac = read_child(filename)
+    for Z,A in zip(Zc, Ac):
+        if (find_isotope(Z, A, Zs, As)):
+            print ('Child ', Z, A, 'is stable!')
+        elif (find_isotope(Z, A, Zp, Ap)):
+            print ('Child ', Z, A, 'is a known decaying particle')
+        else:
+            print ('Child ', Z, A, 'has an unknown doom')
+
+def check_isGhost(filename):
+    Zp, Ap, tau = read_ghosts('../../data/betadecays_list.txt')
+    
+    ZU, AU = np.loadtxt(filename, skiprows=0, usecols=(0,1), unpack=True)
+    for Z,A in zip(ZU, AU):
+        if not find_isotope(Z, A, Zp, Ap):
+            print (int(Z), int(A), 'What is this?')
+        #else:
+        #    print (int(Z), int(A), 'Is ghost!')
+
+#plot_longbetadecays()
+#plot_betadecays('../../data/betadecays_list.txt')
+
+#check_decays('../../data/betadecays_list.txt')
+
+check_isGhost('USINE_ghostlist.txt')
