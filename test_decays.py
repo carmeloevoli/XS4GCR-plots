@@ -33,12 +33,13 @@ def check_isGhost(filename):
         #    print (int(Z), int(A), 'Is ghost!')
 
 def check_duplicate():
-    Zp, Ap, tau = plib.read_ghosts('../../data/betadecays_list.txt')
-    Zs, As = np.loadtxt('../../data/crchart_Z28.txt', skiprows=1, usecols=(0,1), unpack=True)
+    Zp, Ap, tau = plib.read_ghosts('../../data/ghost_list.txt')
+    Zs, As = np.loadtxt('../../data/crchart_Z28_2020.txt', skiprows=1, usecols=(0,1), unpack=True)
+    
     for Z,A in zip(Zs,As):
         if find_isotope(Z, A, Zp, Ap):
             print (int(Z), int(A))
 
-check_decays('../../data/betadecays_list.txt')
+#check_decays('../../data/betadecays_list.txt')
 #check_isGhost('USINE_ghostlist.txt')
-#check_duplicate()
+check_duplicate()
